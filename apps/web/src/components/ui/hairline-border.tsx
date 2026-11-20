@@ -6,6 +6,8 @@ type HairlineBorderProps = ComponentPropsWithoutRef<"div"> & {
   /** fg/24 instead of fg/12, for inputs and anything that needs to read as a control. */
   strong?: boolean;
   radius?: "none" | "sm" | "md" | "lg";
+  /** The hairline turns into rotating film on hover or focus. */
+  film?: boolean;
 };
 
 const RADIUS = {
@@ -16,8 +18,13 @@ const RADIUS = {
 } as const;
 
 /** A 1px all-round hairline. Borders go all the way round or not at all. */
-export function HairlineBorder({ strong = false, radius = "md", className, ...rest }: HairlineBorderProps) {
-  return <div className={cn(strong ? "hairline-strong" : "hairline", RADIUS[radius], className)} {...rest} />;
+export function HairlineBorder({ strong = false, radius = "md", film = false, className, ...rest }: HairlineBorderProps) {
+  return (
+    <div
+      className={cn(film ? "film-border" : strong ? "hairline-strong" : "hairline", RADIUS[radius], className)}
+      {...rest}
+    />
+  );
 }
 
 /** A horizontal rule in the same weight, for separating rows. */

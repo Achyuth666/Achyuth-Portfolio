@@ -19,7 +19,7 @@ type AsLink = Common & { href: string } & Omit<ComponentPropsWithoutRef<"a">, ke
 export type MagneticButtonProps = AsButton | AsLink;
 
 const VARIANT = {
-  primary: "bg-fg text-bg",
+  primary: "bg-fg text-bg film-sheen",
   secondary: "hairline-strong text-fg [@media(hover:hover)_and_(pointer:fine)]:hover:bg-fg/6",
   ghost: "text-fg underline decoration-fg/24 underline-offset-4 [@media(hover:hover)_and_(pointer:fine)]:hover:decoration-fg",
 } as const;

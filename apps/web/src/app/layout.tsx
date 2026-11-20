@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
+import { FilmCursor } from "@/components/effects/film-cursor";
+import { InkSpillToggle } from "@/components/theme/ink-spill-toggle";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Grain } from "@/components/ui/grain";
-import { InvertCursor } from "@/components/ui/invert-cursor";
 import { themeInitScript } from "@/lib/theme/cookie";
 import "./globals.css";
 
@@ -57,7 +58,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <ThemeProvider>
           {children}
-          <InvertCursor />
+          {/* The theme switch lives in the top-right corner on every page. */}
+          <div className="fixed right-4 top-4 z-[60] md:right-6 md:top-6">
+            <InkSpillToggle className="glass" />
+          </div>
+          <FilmCursor />
         </ThemeProvider>
         <Grain />
       </body>

@@ -41,7 +41,13 @@ export function originFrom(from: Element | { x: number; y: number } | null | und
 type StartViewTransition = (cb: () => void) => {
   ready: Promise<void>;
   finished: Promise<void>;
+  skipTransition?: () => void;
 };
+
+/** Resolves after `ms`, so a transition that never settles can't lock the toggle. */
+function timeout(ms: number) {
+  return new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), ms));
+}
 
 /**
  * Swaps the theme inside a View Transition. In `ink` mode the new snapshot is
@@ -74,9 +80,13 @@ export async function runThemeTransition(opts: {
   }
 
   const vt = doc.startViewTransition.call(document, apply);
+  const watchdog = duration + 1500;
 
   try {
-    await vt.ready;
+    if ((await Promise.race([vt.ready.then(() => "ready" as const), timeout(watchdog)])) === "timeout") {
+      vt.skipTransition?.();
+      return;
+    }
     if (mode === "ink" && style) {
       const sheet = style;
       const w = window.innerWidth;
@@ -84,7 +94,8 @@ export async function runThemeTransition(opts: {
       const ink = makeInk((Math.random() * 2 ** 31) | 0);
       const Rend = coverRadius(ink, origin.x, origin.y, w, h);
       const start = performance.now();
-      await new Promise<void>((resolve) => {
+      // Raced with the watchdog: hidden tabs pause rAF, which would otherwise freeze the spill mid-way.
+      const frames = new Promise<void>((resolve) => {
         const frame = (now: number) => {
           const p = Math.min(1, (now - start) / duration);
           const d = inkPath(ink, origin.x, origin.y, Rend, p);
@@ -96,8 +107,14 @@ export async function runThemeTransition(opts: {
         };
         requestAnimationFrame(frame);
       });
+      if ((await Promise.race([frames.then(() => "done" as const), timeout(watchdog)])) === "timeout") {
+        vt.skipTransition?.();
+        return;
+      }
     }
-    await vt.finished;
+    if ((await Promise.race([vt.finished.then(() => "done" as const), timeout(watchdog)])) === "timeout") {
+      vt.skipTransition?.();
+    }
   } catch {
     // Skipped transitions (tab hidden, another transition started) still apply the theme.
   } finally {

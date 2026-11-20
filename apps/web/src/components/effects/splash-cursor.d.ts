@@ -1,0 +1,28 @@
+// Types for the vendored React Bits Splash Cursor (splash-cursor.jsx),
+// copied from the upstream TypeScript build's props interface.
+import type { CSSProperties, JSX } from "react";
+
+export interface SplashCursorProps {
+  colors?: string[];
+  rainbow?: boolean;
+  colorSpeed?: number;
+  intensity?: number;
+  size?: number;
+  force?: number;
+  swirl?: number;
+  trail?: number;
+  momentum?: number;
+  shading?: number;
+  glow?: number;
+  quality?: "low" | "medium" | "high";
+  clickSplash?: boolean;
+  intro?: boolean;
+  contained?: boolean;
+  theme?: "dark" | "light";
+  zIndex?: number;
+  className?: string;
+  style?: CSSProperties;
+}
+
+declare function SplashCursor(props: SplashCursorProps): JSX.Element;
+export default SplashCursor;

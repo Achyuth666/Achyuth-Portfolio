@@ -10,7 +10,8 @@
  *
  * Changes from the original: the blot is drawn into a View Transition's
  * `::view-transition-new(root)` clip-path instead of a second React tree,
- * the rim resolution is configurable (720 points by default), and the
+ * the rim resolution is configurable (360 points by default, enough for a
+ * ragged edge at 60fps), and the
  * easing is exported so other scenes can follow the same curve.
  */
 
@@ -115,7 +116,7 @@ export function inkPath(
   oy: number,
   Rend: number,
   p: number,
-  steps = 720,
+  steps = 360,
 ): string {
   const R = Rend * easeSpill(p);
   if (R <= 0.5) return "";

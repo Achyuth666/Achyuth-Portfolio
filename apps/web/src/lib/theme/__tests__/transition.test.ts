@@ -46,6 +46,28 @@ describe("runThemeTransition", () => {
     expect(apply).toHaveBeenCalledOnce();
   });
 
+  it("skips a transition that never becomes ready instead of locking the toggle", async () => {
+    vi.useFakeTimers();
+    const skip = vi.fn();
+    const never = new Promise<void>(() => {});
+    Object.assign(document, {
+      startViewTransition: (cb: () => void) => {
+        cb();
+        return { ready: never, finished: never, skipTransition: skip };
+      },
+    });
+    try {
+      const run = runThemeTransition({ mode: "fade", origin: { x: 0, y: 0 }, apply: vi.fn() });
+      await vi.advanceTimersByTimeAsync(FADE_MS + 1500);
+      await run;
+    } finally {
+      vi.useRealTimers();
+      delete (document as { startViewTransition?: unknown }).startViewTransition;
+    }
+    expect(skip).toHaveBeenCalledOnce();
+    expect(document.documentElement.dataset.vt).toBeUndefined();
+  });
+
   it("applies inside a view transition and cleans up after a fade", async () => {
     const apply = vi.fn();
     let modeDuringTransition: string | undefined;

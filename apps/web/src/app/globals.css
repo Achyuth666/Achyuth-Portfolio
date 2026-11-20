@@ -2,19 +2,35 @@
 
 /*
  * Latent Space design tokens. See docs/DESIGN.md.
- * Two hex values exist in this codebase: ink and paper. Every grey is an
- * opacity of the foreground (`text-fg/60`, `border-fg/12`, `bg-fg/6`).
+ * Base: ink and bone, greys are opacities of the foreground.
+ * Colour: a thin-film trio (teal, plum, gold) that shimmers where you move:
+ * the cursor fluid, italic display words, sheens and hover hairlines.
+ * Each theme has its own film values so text built from them stays legible.
  */
 
 :root {
-  --ink: #0a0a0a;
-  --paper: #f5f3ee;
+  --ink: #0b0b0d;
+  --paper: #f1ece3;
 
-  /* Paper theme by default; the head script sets data-theme before paint. */
+  --teal: #1e8c86;
+  --plum: #7a2e5c;
+  --gold: #d4a64a;
+
+  /* Bone theme by default; the head script sets data-theme before paint. */
   --bg: var(--paper);
   --fg: var(--ink);
+  --film-1: #17716c;
+  --film-2: #7a2e5c;
+  --film-3: #9a7224;
   --grain-blend: multiply;
   color-scheme: light;
+
+  /* Hover light: two pale tones only (pale aqua, champagne) plus pearl. */
+  --hover-1: #6fc3b8;
+  --hover-2: #d8b46a;
+  --pearl: #fbf6ec;
+
+  --film: linear-gradient(100deg, var(--film-1), var(--film-2) 45%, var(--film-3) 75%, var(--film-1));
 
   --ease-ink-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-ink-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -29,7 +45,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --bg: var(--ink);
+  --hover-1: #9fe0d6;
+  --hover-2: #efd08f;
     --fg: var(--paper);
+    --film-1: #3fb8ae;
+    --film-2: #c4609a;
+    --film-3: #e2b95c;
     --grain-blend: screen;
     color-scheme: dark;
   }
@@ -37,14 +58,24 @@
 
 [data-theme="light"] {
   --bg: var(--paper);
+  --hover-1: #6fc3b8;
+  --hover-2: #d8b46a;
   --fg: var(--ink);
+  --film-1: #17716c;
+  --film-2: #7a2e5c;
+  --film-3: #9a7224;
   --grain-blend: multiply;
   color-scheme: light;
 }
 
 [data-theme="dark"] {
   --bg: var(--ink);
+  --hover-1: #9fe0d6;
+  --hover-2: #efd08f;
   --fg: var(--paper);
+  --film-1: #3fb8ae;
+  --film-2: #c4609a;
+  --film-3: #e2b95c;
   --grain-blend: screen;
   color-scheme: dark;
 }
@@ -54,6 +85,12 @@
   --color-paper: var(--paper);
   --color-bg: var(--bg);
   --color-fg: var(--fg);
+  --color-teal: var(--teal);
+  --color-plum: var(--plum);
+  --color-gold: var(--gold);
+  --color-film-1: var(--film-1);
+  --color-film-2: var(--film-2);
+  --color-film-3: var(--film-3);
 
   --font-serif: var(--font-instrument-serif), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -98,8 +135,13 @@ li {
 }
 
 ::selection {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--film-2);
+  color: var(--paper);
+}
+
+html {
+  caret-color: var(--film-1);
+  scrollbar-color: color-mix(in oklab, var(--fg) 24%, transparent) transparent;
 }
 
 :focus-visible {
@@ -185,6 +227,163 @@ li {
   }
 }
 
+/* ---------- Thin film ---------- */
+
+/* Italic words in display type shimmer through the film. */
+@keyframes film-shift {
+  to {
+    background-position: -300% 50%;
+  }
+}
+.film-text,
+:where(.display-xl, .display-lg, .display-md, .display-sm) em {
+  background-image: var(--film);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: film-shift 9s linear infinite;
+  padding-right: 0.06em; /* keeps the italic overhang inside the clip */
+}
+
+/* A hairline that turns into rotating film on hover or focus. */
+@property --film-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes film-spin {
+  to {
+    --film-angle: 360deg;
+  }
+}
+.film-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface, var(--bg)), var(--surface, var(--bg))) padding-box,
+    linear-gradient(color-mix(in oklab, var(--fg) 12%, transparent), color-mix(in oklab, var(--fg) 12%, transparent)) border-box;
+}
+.film-border:hover,
+.film-border:focus-within {
+  background:
+    linear-gradient(var(--surface, var(--bg)), var(--surface, var(--bg))) padding-box,
+    conic-gradient(from var(--film-angle), var(--hover-1), var(--hover-2), var(--pearl), var(--hover-2), var(--hover-1)) border-box;
+  animation: film-spin 4s linear infinite;
+}
+
+/* A film sheen that sweeps across a solid block on hover. */
+.film-sheen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.film-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 25%, color-mix(in oklab, var(--hover-2) 70%, transparent) 45%, color-mix(in oklab, var(--pearl) 80%, transparent) 55%, transparent 75%);
+  opacity: 0;
+  transform: translateX(-110%);
+  transition:
+    transform 700ms var(--ease-ink-out),
+    opacity 300ms var(--ease-ink-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .film-sheen:hover::after {
+    opacity: 0.55;
+    transform: translateX(0);
+  }
+}
+
+/* ---------- Glossy glass ---------- */
+
+/* Specular highlight + bright inner rim, like light catching a glass tile. */
+.gloss {
+  position: relative;
+  isolation: isolate;
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+}
+.gloss::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, white var(--gloss-strength, 30%), transparent) 0%,
+    color-mix(in oklab, white 6%, transparent) 26%,
+    transparent 44%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 55%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, white 8%, transparent),
+    inset 0 -18px 30px -24px color-mix(in oklab, black 30%, transparent);
+}
+[data-theme="light"] .gloss,
+.gloss[data-theme="light"] {
+  --gloss-strength: 55%;
+}
+/* A light streak that sweeps across the tile on hover. */
+.gloss::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    color-mix(in oklab, white 35%, transparent) 48%,
+    color-mix(in oklab, white 10%, transparent) 52%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  opacity: 0;
+  transition:
+    background-position 900ms var(--ease-ink-out),
+    opacity 300ms var(--ease-ink-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .gloss:hover::after {
+    opacity: 1;
+    background-position: -30% 0;
+  }
+}
+
+/* Soft film pools drifting behind glass so it has something to refract. */
+@keyframes pool-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(8%, -6%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-6%, 5%, 0) scale(0.94);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+.film-pool {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  opacity: 0.32;
+  animation: pool-drift var(--pool-duration, 22s) var(--ease-ink-in-out) infinite;
+  will-change: transform;
+}
+[data-theme="dark"] .film-pool {
+  opacity: 0.42;
+}
+
 /* ---------- Grain ---------- */
 
 .grain {
@@ -213,14 +412,17 @@ li {
 }
 .split-word-inner {
   display: inline-block;
+  transform-origin: 0% 100%;
   transition:
-    transform var(--dur-reveal) var(--ease-ink-out),
-    opacity var(--dur-reveal) var(--ease-ink-out);
-  transition-delay: calc(var(--i, 0) * 45ms);
+    transform 900ms var(--ease-ink-out),
+    opacity 700ms var(--ease-ink-out),
+    filter 900ms var(--ease-ink-out);
+  transition-delay: calc(var(--i, 0) * 55ms);
 }
 .js [data-split]:not([data-revealed]) .split-word-inner {
-  transform: translateY(105%);
+  transform: translateY(110%) rotate(6deg);
   opacity: 0;
+  filter: blur(10px);
 }
 
 /* ---------- Marquee ---------- */
@@ -263,6 +465,16 @@ html[data-vt="ink"]::view-transition-new(root) {
   z-index: 1;
 }
 
+/* While the spill runs, freeze everything underneath so the browser only redraws the mask. */
+html[data-vt] *,
+html[data-vt] *::before,
+html[data-vt] *::after {
+  animation-play-state: paused !important;
+}
+html[data-vt] .film-cursor {
+  visibility: hidden;
+}
+
 html[data-vt="fade"]::view-transition-old(root),
 html[data-vt="fade"]::view-transition-new(root) {
   animation-duration: var(--vt-duration, 200ms);
@@ -272,12 +484,26 @@ html[data-vt="fade"]::view-transition-new(root) {
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
+  .film-text,
+  :where(.display-xl, .display-lg, .display-md, .display-sm) em,
+  .film-border:hover,
+  .film-border:focus-within {
+    animation: none;
+  }
+  .film-sheen::after,
+  .gloss::after {
+    transition: none;
+  }
+  .film-pool {
+    animation: none;
+  }
   .split-word-inner {
     transition: none;
   }
   .js [data-split]:not([data-revealed]) .split-word-inner {
     transform: none;
     opacity: 1;
+    filter: none;
   }
   .marquee-track {
     animation: none;

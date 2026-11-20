@@ -24,3 +24,23 @@ export function damp(current: number, target: number, lambda: number, dtSeconds:
 export function splitWords(text: string): string[] {
   return text.match(/\S+\s*/g) ?? [];
 }
+
+/**
+ * 3D tilt toward the pointer. Returns rotations in degrees (capped at `max`)
+ * and the pointer's position inside the rect as 0..1, for a glare highlight.
+ */
+export function tiltFromPointer(
+  pointer: { x: number; y: number },
+  rect: { left: number; top: number; width: number; height: number },
+  max = 8,
+): { rx: number; ry: number; px: number; py: number } {
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  const px = clamp01((pointer.x - rect.left) / rect.width);
+  const py = clamp01((pointer.y - rect.top) / rect.height);
+  return { rx: (0.5 - py) * 2 * max, ry: (px - 0.5) * 2 * max, px, py };
+}
+
+/** Skew in degrees for a scroll velocity in px/s, saturating smoothly at `max`. */
+export function skewFromVelocity(pxPerSecond: number, max = 10): number {
+  return max * Math.tanh(pxPerSecond / 2500);
+}
