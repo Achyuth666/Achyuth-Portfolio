@@ -1,0 +1,28 @@
+{
+  "name": "achyuth-portfolio",
+  "private": true,
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "bootstrap": "pnpm install && uv sync --directory apps/api",
+    "dev": "concurrently -k -n web,api -c white,gray \"pnpm dev:web\" \"pnpm dev:api\"",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "uv run --directory apps/api uvicorn app.main:app --reload --port 8000",
+    "lint": "pnpm lint:web && pnpm lint:api",
+    "lint:web": "pnpm --filter web lint",
+    "lint:api": "uv run --directory apps/api ruff check . && uv run --directory apps/api ruff format --check .",
+    "format:api": "uv run --directory apps/api ruff format . && uv run --directory apps/api ruff check --fix .",
+    "typecheck": "pnpm --filter web typecheck",
+    "test": "pnpm test:web && pnpm test:api",
+    "test:web": "pnpm --filter web test",
+    "test:api": "uv run --directory apps/api pytest",
+    "build": "pnpm --filter web build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "seed": "node -e \"console.log('seed: not implemented until Phase 2')\""
+  },
+  "devDependencies": {
+    "concurrently": "10.0.7"
+  }
+}
