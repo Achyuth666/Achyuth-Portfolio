@@ -55,21 +55,27 @@ When a skill's defaults contradict the design laws below, **the design laws win*
 
 ## Design laws (non-negotiable)
 
-1. **Two tones only.** Ink `#0A0A0A` and paper `#F5F3EE`; they swap roles between themes.
-   Greys come **only from opacity** (`ink/60`, `ink/12`, `paper/6`). No other hex values.
-2. **No colour accent.** Emphasis comes from weight, italics, scale and inversion (black block on
-   white). No coloured links, focus rings, badges or charts.
-3. **Theme switch = the ink spill, and nothing else.** Toggling spills the new theme from the
-   toggle's position (View Transitions + fractal mask, ~900ms). Reduced motion → 200ms cross-fade.
-   System theme by default, persisted in localStorage + cookie so SSR renders without a flash.
-4. **Serif display headlines with exactly one italic word each** (Instrument Serif / Fraunces /
-   PP Editorial New). UI in a sharp grotesk (Geist / Inter Tight); labels in Geist Mono.
+1. **Ink, bone and a thin film.** Base: ink `#0B0B0D` and bone `#F1ECE3`, swapping roles between
+   themes; greys come from opacity of the foreground (`fg/60`, `fg/12`). Colour is the thin film:
+   teal `#1E8C86`, plum `#7A2E5C`, gold `#D4A64A`, each with a per-theme value (`--film-1..3`).
+   No other hues. All colours live as tokens in `globals.css`.
+2. **Colour lives where you move.** The film appears in motion and at edges: the cursor fluid,
+   italic display words, button sheens, card edges on hover, the active nav marker, selection.
+   Never as a flat fill for a whole section, never on body text.
+3. **Theme switch = the ink spill, in the top-right corner.** Toggling spills the new theme from
+   the toggle's position (View Transitions + fractal mask, ~900ms). Reduced motion: 200ms
+   cross-fade. System theme by default, restored from a cookie before first paint.
+4. **Serif display headlines with exactly one italic word each** (Instrument Serif). UI in Geist
+   Sans; labels in Geist Mono. The italic word carries the film shimmer.
 5. **No AI-default look:** no Inter-everywhere, no Poppins/Montserrat, no purple/blue gradients,
-   no gradients at all, no glowing neon, no emoji icons, no invented testimonials or numbers.
-6. Texture over colour: film grain at 3–4%, frosted monochrome glass (`ink/6` or `paper/6`,
-   1px hairline, 24px blur).
-7. Motion follows Emil's rules: UI transitions < 300ms; never animate high-frequency actions
-   (⌘K open, typing); always respect `prefers-reduced-motion`.
+   no neon glow, no emoji icons, no invented testimonials or numbers. The only gradients are the
+   film (teal, plum, gold) on text, edges and sheens.
+6. Texture: film grain at 3-4%, frosted glass (`fg/6`, 24px blur) whose hairline turns to film
+   on hover. Navigation is a vertical rail on the left (a drawer on phones).
+7. Motion is a feature: the React Bits Splash Cursor (film-tinted fluid), split-text reveals,
+   tilt cards, velocity-skewed marquees. UI responses stay < 300ms; never animate high-frequency
+   actions (⌘K open, typing); always respect `prefers-reduced-motion` (cursor fluid off, reveals
+   shown, shimmer still); cursor effects only on fine pointers.
 
 ## The 10 mandatory sections
 

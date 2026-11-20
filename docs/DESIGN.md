@@ -4,16 +4,16 @@ Phase 1, step 2. Direction locked with `ui-ux-pro-max` (`--design-system "portfo
 monochrome minimal"`, plus `typography` and `style` searches). The database's picks are a starting
 point; `CLAUDE.md` design laws override them (see "What we took, what we rejected").
 
-## Style: Editorial monochrome
+## Style: Editorial ink with a thin film
 
-A printed object, not an app. Ink on warm paper, set like a magazine: a big serif display with one
-italic word, a tight grotesk for interface, mono for metadata. Texture (grain, glass) replaces
-colour. Emphasis comes from **scale, weight, italics and inversion** — a black block on paper, or a
-paper block on ink.
+> **Revised after Phase 1 review (Nov 21, 2026).** Achyuth rejected strict monochrome. The base
+> stays editorial ink and bone; colour arrives as a thin film (teal, plum, gold) that lives in
+> motion and at edges. Chosen from three proposals (thin film, oxblood and brass, cyanotype).
 
-Closest database styles: **E-Ink / Paper** (paper ground, grain, monochrome, high contrast) crossed
-with **Minimalism & Swiss** (grid, hairlines, no shadows) and **Editorial Grid / Magazine**
-(oversized display type, asymmetric grid).
+A printed object that reacts. Ink on warm bone, set like a magazine: a big serif display with one
+italic word, a tight grotesk for interface, mono for metadata. Colour is never a flat fill; it is
+the oil-slick sheen you see when something moves: the cursor stirs a fluid of teal, plum and gold,
+italic words shimmer through it, card edges turn into it on hover.
 
 ### What we took, what we rejected
 
@@ -30,39 +30,56 @@ with **Minimalism & Swiss** (grid, hairlines, no shadows) and **Editorial Grid /
 
 ## Colour
 
-Two hex values exist in the whole codebase. They live in `globals.css` and nowhere else.
-
-| Token | Value |
-| --- | --- |
-| `--ink` | `#0A0A0A` |
-| `--paper` | `#F5F3EE` |
-
-**Themes swap roles.** Components never say "ink" or "paper"; they say foreground/background.
-
-| Semantic token | Paper theme (light) | Ink theme (dark) |
+| Token | Value | Role |
 | --- | --- | --- |
-| `--bg` | paper | ink |
-| `--fg` | ink | paper |
+| `--ink` | `#0B0B0D` | Base dark |
+| `--paper` (bone) | `#F1ECE3` | Base light |
+| `--teal` | `#1E8C86` | Film pigment 1 (cursor fluid on bone) |
+| `--plum` | `#7A2E5C` | Film pigment 2 |
+| `--gold` | `#D4A64A` | Film pigment 3 |
 
-**Greys come only from opacity of `--fg` over `--bg`** (via `color-mix(in oklab, var(--fg) N%, transparent)`).
-The ladder, with measured contrast against the background:
+**Themes swap the base roles.** Components say `bg` / `fg`, never ink or bone.
 
-| Step | Use | Contrast (paper / ink theme) |
+| Semantic token | Bone theme (light) | Ink theme (dark) |
+| --- | --- | --- |
+| `--bg` | bone | ink |
+| `--fg` | ink | bone |
+| `--film-1` (teal) | `#17716C` (4.9 : 1) | `#3FB8AE` (8.1 : 1) |
+| `--film-2` (plum) | `#7A2E5C` (7.5 : 1) | `#C4609A` (5.1 : 1) |
+| `--film-3` (gold) | `#9A7224` (3.7 : 1) | `#E2B95C` (10.6 : 1) |
+
+Film values are deeper on bone so they stain and brighter on ink so they glow. Contrast is against
+`--bg`; every film value clears 3 : 1, so it is safe for display type (the italic word) and UI
+edges. Film is never used for body text.
+
+**Hover light** is a separate, paler pair, so interaction never goes dark or muddy and never
+uses every colour at once: `--hover-1` pale aqua (`#6FC3B8` bone / `#9FE0D6` ink), `--hover-2`
+champagne (`#D8B46A` / `#EFD08F`), plus `--pearl` `#FBF6EC` for highlights. It drives the card
+edge on hover (aqua to champagne), the button sheen (champagne into pearl), the tilt glare, the
+nav marker, and the cursor fluid.
+
+**Glossy glass:** every card (`FrostedCard`) is `.gloss`: 24px blur with 1.6 saturation, a
+specular highlight from the top-left, a bright inner rim, and a light streak that sweeps across
+on hover. Grids of cards sit over `FilmPools`, three blurred film pools drifting slowly behind
+the glass so it has colour to frost.
+
+`--film` is the gradient `teal, plum, gold, teal` at 100 degrees. It is the only gradient in the
+system and is used for: italic display words (9s shimmer), the primary button sheen on hover, the
+text selection and the caret.
+
+**Greys come from opacity of `--fg` over `--bg`.** Measured contrast:
+
+| Step | Use | Contrast (bone / ink theme) |
 | --- | --- | --- |
 | `fg` (100) | Headlines, body | 17.9 : 1 / 17.9 : 1 |
 | `fg/80` | Secondary body | 10.5 / 11.4 |
 | `fg/60` | **Minimum for any text** (captions, labels) | 5.1 / 6.7 (AA) |
 | `fg/40` | Disabled text, large decorative numerals only | 2.7 / 3.5 (not for body) |
-| `fg/24` | Strong hairline, input borders (3:1 non-text not required for decorative rules) | — |
+| `fg/24` | Control borders | — |
 | `fg/12` | Hairlines, dividers | — |
 | `fg/6` | Glass fill, hover wash | — |
-| `fg/3` | Grain intensity, subtle zebra | — |
 
-Inversion (`bg-fg text-bg`) is the only "accent": primary buttons, selected chips, the active nav
-item, focus rings and the cursor.
-
-**Focus ring:** 2px solid `--fg` with a 2px `--bg` offset — visible on both themes and on
-inverted blocks.
+**Focus ring:** 2px solid `--fg`, 3px offset, on every surface.
 
 ## Typography
 
@@ -135,16 +152,20 @@ Emil Kowalski's rules; tuned with `animate`.
 
 | Component | Notes |
 | --- | --- |
-| `FrostedCard` | Glass surface; `as` prop; optional `inverted` |
-| `HairlineBorder` | Wraps content in a 1px `fg/12` box; `strong` variant `fg/24` |
-| `MagneticButton` | Pulls toward the pointer (max 8px, spring back); `primary` = inverted block, `secondary` = hairline; `asChild`-style `href` support; press scale 0.97 |
-| `InvertCursor` | `mix-blend-mode: difference` dot that grows over links/buttons; fine pointers only; off under reduced motion |
+| `FrostedCard` | Glass surface whose hairline turns to rotating film on hover; `as` prop; optional `inverted` |
+| `HairlineBorder` | Wraps content in a 1px `fg/12` box; `strong` variant `fg/24`; `film` variant turns to film on hover |
+| `MagneticButton` | Pulls toward the pointer (max 8px, spring back); `primary` = inverted block with a film sheen on hover, `secondary` = hairline; `href` support; press scale 0.97 |
+| `FilmCursor` | React Bits Splash Cursor (MIT + Commons Clause, vendored in `components/effects`), tinted to the film per theme, lazy-loaded, fine pointers only, off under reduced motion |
+| `InvertCursor` | Kept in the library, not mounted (superseded by `FilmCursor`) |
+| `TiltCard` | 3D tilt toward the pointer (max 8 degrees) with a film glare; flat under reduced motion |
+| `VelocitySkew` | Skews its child with scroll velocity, settles when scrolling stops |
+| `SideNav` | Vertical rail on the left (240px) with scroll-spy film marker and progress line; a left drawer with a menu button below `lg` |
 | `SplitText` | Line/word rise-and-fade on first view; screen readers get the plain string |
 | `Marquee` | CSS-only infinite strip; the strip is focusable and pauses on hover or focus (WCAG 2.2.2), static under reduced motion |
 | `BentoGrid` | 6-col grid → 1 col on mobile; `BentoItem` with col/row spans |
 | `SectionHeading` | Mono eyebrow + serif display with one italic word (`"Selected *work*"` syntax) |
 | `Badge` | Mono chip: `outline` (hairline) / `solid` (inverted) |
-| `ThemeToggle` | The ink spill (see below) |
+| `InkSpillToggle` | The ink spill (see below). Fixed in the top-right corner of every page |
 
 ## Theme switch: the ink spill
 
