@@ -254,3 +254,9 @@ apps/api/kb/*.pdf
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Python template ignores lib/; web source lives in apps/web/src/lib
+!apps/web/src/lib/
+
+# Playwright MCP scratch output
+.playwright-mcp/
